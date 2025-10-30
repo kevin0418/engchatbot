@@ -5,6 +5,8 @@ import streamlit as st
 import pdfplumber
 import openai
 import os
+import nltk
+nltk.download('punkt')
 from nltk.tokenize import sent_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import pipeline
@@ -30,12 +32,6 @@ with st.sidebar:
     st.header("Settings")
     
     # API key input
-    # openai_api_key = st.text_input(
-    #     "OpenAI API Key",
-    #     type="password",
-    #     help="Enter your OpenAI API key"
-    # )
-    
     openai_api_key = st.secrets["api_keys"]["my_api_key"]
 
     # Number of questions setting
@@ -47,15 +43,10 @@ with st.sidebar:
     )
     
     # Question type selection
+    #["Multiple Choice", "Short Answer", "Mixed"]
     question_type = st.selectbox(
         "Question type",
-        ["Multiple Choice", "Short Answer", "Mixed"]
-    )
-    
-    # Model selection
-    model_choice = st.radio(
-        "Model to use",
-        ["OpenAI GPT", "HuggingFace Transformers"]
+        ["Multiple Choice", "Fill-in-the-Blank", "Mixed"]
     )
     
     # Difficulty level
@@ -134,19 +125,18 @@ def generate_questions_openai(text, num_questions, question_type, difficulty):
         return None
     
     openai.api_key = openai_api_key
-    
-    # Map question types to English instructions
+       
     question_type_map = {
         "Multiple Choice": "multiple choice questions with 4 options each",
-        "Short Answer": "short answer questions",
-        "Mixed": "mixed questions (both multiple choice and short answer)"
+        "Fill-in-the-Blank": "Fill-in-the-Blank questions",
+        "Mixed": "mixed questions (both multiple choice and sFill-in-the-Blank)"
     }
     
     prompt = f"""
     Generate {num_questions} {question_type_map[question_type]} from the following text.
     
     Requirements:
-    1. Create clear and well-structured questions
+    1. Create clear and well-structured questions for Year 6-12 students
     2. For multiple choice questions, include 4 distinct options
     3. Include correct answers with brief explanations
     4. Questions should be appropriate for {difficulty.lower()} difficulty level
@@ -163,7 +153,7 @@ def generate_questions_openai(text, num_questions, question_type, difficulty):
     Answer: [Correct answer]
     Explanation: [Brief explanation]
     
-    For short answer questions:
+    For Fill-in-the-Blank questions:
     Q1. [Question content]
     Answer: [Expected answer]
     Explanation: [Brief explanation]
@@ -183,35 +173,7 @@ def generate_questions_openai(text, num_questions, question_type, difficulty):
     except Exception as e:
         st.error(f"Error calling OpenAI API: {e}")
         return None
-
-def generate_questions_transformers(text, num_questions):
-    """Generate questions using HuggingFace Transformers"""
-    try:
-        # Simple question generation pipeline
-        qa_generator = pipeline(
-            "text2text-generation",
-            model="mrm8488/t5-base-finetuned-question-generation-ap"
-        )
-        
-        # Process text in chunks
-        chunk_size = 512
-        chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
-        
-        generated_questions = []
-        for chunk in chunks[:3]:  # Process only first 3 chunks
-            try:
-                result = qa_generator(chunk, max_length=100, num_return_sequences=1)
-                if result:
-                    generated_questions.append(result[0]['generated_text'])
-            except Exception as e:
-                continue
-        
-        return "\n".join(generated_questions) if generated_questions else "Failed to generate questions."
-    
-    except Exception as e:
-        st.error(f"Error loading Transformers model: {e}")
-        return "Failed to load model. Please check your internet connection."
-
+ 
 # Main processing logic
 def main():
     extracted_text = None
@@ -245,11 +207,8 @@ def main():
         # Generate questions button
         if st.button("Generate Questions", type="primary"):
             with st.spinner("Generating questions..."):
-                
-                if model_choice == "OpenAI GPT":
-                    questions = generate_questions_openai(processed_text, num_questions, question_type, difficulty)
-                else:
-                    questions = generate_questions_transformers(processed_text, num_questions)
+                                
+                questions = generate_questions_openai(processed_text, num_questions, question_type, difficulty)
                 
                 # Display results
                 if questions:
@@ -283,30 +242,3 @@ except LookupError:
 if __name__ == "__main__":
     main()
 
-# ## Key Changes for Australian Students:
-
-# 1. **Complete English Translation**:
-#    - All UI elements, labels, and messages in English
-#    - Appropriate terminology for educational context
-
-# 2. **Enhanced Educational Features**:
-#    - Added difficulty levels (Easy, Medium, Hard, Adaptive)
-#    - Clear question type descriptions
-#    - Professional educational tone in prompts
-
-# 3. **International Compatibility**:
-#    - Removed Korean-specific references
-#    - Standardized educational terminology
-#    - Culturally neutral examples
-
-# 4. **Improved User Experience**:
-#    - Clear, concise instructions in English
-#    - Professional formatting for generated questions
-#    - Intuitive navigation for English speakers
-
-# 5. **Educational Best Practices**:
-#    - Proper multiple choice question structure
-#    - Explanations for answers
-#    - Age-appropriate language
-
-# The app is now ready for Australian students and educators to generate quiz questions from various text sources in English!
