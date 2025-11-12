@@ -3,7 +3,7 @@
 #
 
 import streamlit as st
-from google import genai
+# from google import genai
 import google.generativeai as genai
 from datetime import datetime
 import os
