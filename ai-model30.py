@@ -115,8 +115,8 @@ def call_gemini(messages, system_prompt, api_key):
     try:
         # Gemini API 설정
         #client = genai.Client(api_key='GEMINI_API_KEY')
-        genai.configure(api_key=api_key)
-        
+        genai.configure(api_key=api_key),
+        transport='rest' # 이 옵션을 추가 
         # 모델 설정
         model = genai.GenerativeModel(
             model_name='models/gemini-2.5-flash',
@@ -148,7 +148,7 @@ def call_gemini(messages, system_prompt, api_key):
         return f"Gemini API 호출 중 오류 발생: {str(e)}"
 
 # 메인 화면
-st.title("🤖 주제 챗봇  by  Kevin ")
+st.title("🤖 주제별 챗봇  by  Kevin ")
 st.markdown(f"현재 선택된 주제: **{topic}**")
 
 # 채팅 기록 표시
