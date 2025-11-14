@@ -4,9 +4,9 @@
 
 import streamlit as st
 # from google import genai
+import os
 import google.generativeai as genai
 from datetime import datetime
-import os
 
 # 페이지 설정
 st.set_page_config(
@@ -115,14 +115,22 @@ def call_gemini(messages, system_prompt, api_key):
     try:
         # Gemini API 설정
         #client = genai.Client(api_key='GEMINI_API_KEY')
-        genai.configure(api_key=api_key),
+          
+        # genai.configure(api_key=api_key),
+        # transport='rest' # 이 옵션을 추가 
+        # # 모델 설정
+        # model = genai.GenerativeModel(
+        #     model_name='models/gemini-2.5-flash',
+        #     system_instruction=system_prompt
+        # )
+        
+        genai.configure(api_key= api_key),
         transport='rest' # 이 옵션을 추가 
         # 모델 설정
         model = genai.GenerativeModel(
-            model_name='models/gemini-2.5-flash',
+            'models/gemini-2.5-flash',
             system_instruction=system_prompt
         )
-        
         # 대화 기록을 단일 프롬프트로 변환
         conversation_text = ""
         for msg in messages[-6:]:  # 최근 6개 메시지만 사용 (컨텍스트 제한)
