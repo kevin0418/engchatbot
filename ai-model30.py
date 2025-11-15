@@ -8,6 +8,7 @@ import os
 import google.generativeai as genai
 from datetime import datetime
 
+api_key = st.secrets["gemini_api_key"]  
 # 페이지 설정
 st.set_page_config(
     page_title=" 주제 별  챗봇 by Kevin",
@@ -23,13 +24,13 @@ if "topic" not in st.session_state:
 
 # 사이드바 - 설정
 with st.sidebar:
-    st.title("챗봇 설정")
+    # st.title("챗봇 설정")
     
     # API 키 입력
-    api_key = os.getenv("gemini_api_key")
-   
+    # api_key = os.getenv("gemini_api_key")
+    # st_secrets["gemini_api_key"] = "YOUR_GEMINI_API
     # 모델 정보
-    st.info("사용 모델: gemini-2.5-flash")
+    # st.info("사용 모델: gemini-2.5-flash")
     
     # 주제 선택
     topic = st.selectbox(
@@ -112,20 +113,11 @@ def get_system_prompt(topic):
 
 # Gemini API 호출 함수
 def call_gemini(messages, system_prompt, api_key):
+    if not api_key:
+        return "🚨 Gemini API 키가 설정되지 않았습니다."
     try:
-        # Gemini API 설정
-        #client = genai.Client(api_key='GEMINI_API_KEY')
-          
-        # genai.configure(api_key=api_key),
-        # transport='rest' # 이 옵션을 추가 
-        # # 모델 설정
-        # model = genai.GenerativeModel(
-        #     model_name='models/gemini-2.5-flash',
-        #     system_instruction=system_prompt
-        # )
-        
-        genai.configure(api_key= api_key),
-        transport='rest' # 이 옵션을 추가 
+             
+        genai.configure(api_key= api_key, transport='rest') # 이 옵션을 추가 
         # 모델 설정
         model = genai.GenerativeModel(
             'models/gemini-2.5-flash',
@@ -220,22 +212,3 @@ st.sidebar.caption("""
 - Gemini 모델: gemini-1.5-flash 사용
 """)
 
-# 설치 안내
-# with st.expander("설치 및 설정 방법"):
-#     st.markdown("""
-#     ### 필요한 패키지 설치
-#     ```bash
-#     pip install streamlit google-generativeai
-#     ```
-    
-#     ### Gemini API 키 발급
-#     1. [Google AI Studio](https://makersuite.google.com/app/apikey) 접속
-#     2. Google 계정으로 로그인
-#     3. API 키 생성
-#     4. 생성된 키를 사이드바에 입력
-    
-#     ### 실행 방법
-#     ```bash
-#     streamlit run gemini_chatbot.py
-#     ```
-#     """)
