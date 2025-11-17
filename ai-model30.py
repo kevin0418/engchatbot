@@ -22,6 +22,18 @@ if "messages" not in st.session_state:
 if "topic" not in st.session_state:
     st.session_state.topic = ""
 
+
+# --- 텍스트 파일 저장 함수 추가 ---
+def save_chat_to_text(messages, topic):
+    # 대화 내용을 텍스트로 포맷팅
+    chat_content = f"--- 챗봇 대화 기록 ({topic}) ---\n\n"
+    for message in messages:
+        role_name = "User" if message["role"] == "user" else "Assistant"
+        chat_content += f"[{role_name}]\n{message['content']}\n\n"
+    chat_content += f"--- 기록 종료: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---\n"
+ 
+    return chat_content
+
 # 사이드바 - 설정
 with st.sidebar:
     # st.title("챗봇 설정")
@@ -33,9 +45,9 @@ with st.sidebar:
     # st.info("사용 모델: gemini-2.5-flash")
     
     # 주제 선택
-    topic = st.selectbox(
-        "주제 선택:",
-        ["종교 (성경해설)", "심리학 (고민상담)", "의학 (질병)", "영어 (회화, 해설)", "기타"]
+    st.sidebar.subheader("주제 선택")
+    topic = st.selectbox("",
+          ["종교 (성경해설)", "심리학 (고민상담)", "의학 (질병)", "영어 (회화, 해설)", "기타"]
     )
     
     if st.button("대화 초기화"):
@@ -201,6 +213,19 @@ if st.session_state.messages:
     st.sidebar.write(f"총 메시지 수: {len(st.session_state.messages)}")
     user_messages = [msg for msg in st.session_state.messages if msg['role'] == 'user']
     st.sidebar.write(f"사용자 질문: {len(user_messages)}")
+
+
+    # ⬇️ 텍스트 파일 저장 버튼 추가
+    chat_content = save_chat_to_text(st.session_state.messages, topic)
+    filename = f"chat_{topic.replace(' ', '_').replace('(', '').replace(')', '')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+
+    st.sidebar.download_button(
+        label="💾 대화 내용 텍스트로 저장",
+        data=chat_content,
+        file_name=filename,
+        mime="text/plain"
+   )
+
 
 # 주의사항
 st.sidebar.markdown("---")
